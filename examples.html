@@ -3,6 +3,7 @@
 	<script src="https://d3js.org/d3.v4.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script src="plot-d3-histogram.js"></script>
+	<script src="plot-d3-sunburst.js"></script>
 	<style type="text/css">
 	.axis text {
 	  font: 12px sans-serif;
@@ -31,10 +32,16 @@
 			<div id="histogram" style="width: 49%; min-height: 300px; border: solid 1px black; margin-left: auto; margin-right: auto;">
 			</div>
 		</li>
+		<li><h2>Sunburst plots</h2>
+			<div id="sunburst" style="width: 800px; height: 800px; border: solid 1px black; margin-left: auto; margin-right: auto;">
+			</div>
+		</li>
 	</ul>
+	<script src="hist_data.js"></script>
 	<script type="text/javascript">
 		draw_histogram();
-		
+		draw_sunburst();
+
 		function draw_histogram() {
 			var container = d3.select("#histogram");
 			var binValues = [3, 17, 24, 12, 1, 15, 9];
@@ -46,6 +53,46 @@
 
 			plotHistogram(container, binValues, config);
 		}
+
+		function draw_sunburst() {
+			var container = d3.select("#sunburst");
+			var data = {
+				name: "root",
+				children: [{
+				  name: "A",
+				  children: [{
+				  	name: "B",
+				  	children: [{
+				  		name: "C",
+				  		size: 3
+				  	},{
+				  		name: "D",
+				  		size: 1
+				  	}]
+				  },{
+				  	name: "E",
+				  	size: 6
+				  },{
+				  	name: "F",
+				  	children: [{
+				  		name: "G",
+				  		size: 2
+				  	}]
+				  }]
+				},{
+					name: "H",
+					size: 12
+				}]};
+			var config = {
+				bar_spacing: 20,
+				xtitle: "something",
+				ytitle_offset: 25
+			};
+
+			var config = {};
+			plotSunburst(container, hist_data, config);
+		}
+
 	</script>
 </body>
 </html>
