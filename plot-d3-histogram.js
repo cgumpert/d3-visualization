@@ -78,7 +78,7 @@ function plotHistogram(container, data, config) {
   var xAxis = d3.axisBottom(config.xscale);
   var yAxis = d3.axisLeft(config.yscale);
 
-  // draw axis
+  // draw x-axis with title
   canvas.append("g")
   .classed("axis", true)
   .classed("axis--x", true)
@@ -91,6 +91,7 @@ function plotHistogram(container, data, config) {
   .style("text-anchor", "middle")
   .text(config.xtitle);
 
+  // draw y-axis with rotated title
   canvas.append("g")
   .classed("axis", true)
   .classed("axis--y", true)
@@ -104,24 +105,27 @@ function plotHistogram(container, data, config) {
   .text(config.ytitle);
 
 
-  // determine bar width
+  // determine step and bar width
   var step = innerWidth / data.length;
   var barWidth = Math.round(innerWidth / data.length - config.bar_spacing);
 
+  // draw histogram bars
   var bars = canvas.selectAll(".bar")
   .data(data)
   .enter().append("g")
   .classed("bar", true)
   .attr("transform",function (d,i) {return "translate(" + (i *step) +"," + config.yscale(d) + ")";});
 
-  if(typeof(onclick) !== undefined) {
-    bars.on("click", function (d,i) {config.onclick(i,d);});
-  }
-
   bars.append("rect")
   .attr("width", barWidth)
   .attr("height", function (d) {return (innerHeight - config.yscale(d));});
 
+  // add callbacks
+  if(typeof(onclick) !== undefined) {
+    bars.on("click", function (d,i) {config.onclick(i,d);});
+  }
+
+  // draw bin values only if bars are wide enough
   if(barWidth > 20) {
     bars.append("text")
     .attr("x", barWidth / 2)
