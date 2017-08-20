@@ -1,16 +1,74 @@
+/**
+* Helper function for visualising a sunburst plot as SVG using d3js
+*
+* @param {Object}   container - D3 selection to HTML object acting as container of the svg
+* @param {Float[]}  data      - array with tree information
+* @param {Object}   [config]  - configuration object (optional)
+* @param {Int}      [config.breadcrumb]   - definition of polygon for breadcrumb (optional)
+* @param {Object}   [config.color]        - D3 scale object for color coding (optional)
+* @param {Callback} [config.cutoff]       - minimum relative contribution for a contribution to be shown (optional)
+* @param {d3.scale} [config.legend_entry] - definition of polygon for legend entry (optional)
+* @param {String}   [config.margin]       - specification of top/bottom/right/left margins (optional)
+*
+* This function requires the d3.js library and jQuery to be loaded.
+*
+* This function takes a data object describing a tree structure. The data object
+* must have the following layout:
+*
+* var data = {
+*  name: "root",
+*  children: [{
+*    name: "A",
+*    children: [...],
+*    size: 3
+*   },{
+*    name: "B",
+*    children: [...],
+*    size: 5
+*   }
+*   ...
+*  ],
+*  size: 0
+* };
+*
+* The size for each node should describe the size of this specific node NOT
+* including the contributions from child nodes. The function then plots the data
+* as a sunburst diagram in a SVG inside the given HTML object/container. If the
+* container contains a SVG element, it is overwritten and replaced by the
+* sunburst SVG. The config object allows to customize the appearance and
+* behaviour of the plot.
+* The margin object must have bottom/top/left/right attributes specifying the
+* individual margins. The color object should be a pre-configured d3 ordinal
+* scale object. The domain is overwritten by the function to match the list of
+* unique node names.
+* 
+* The SVG elements can be styled using CSS. To this end, the following class
+* tags are assigned:
+* - The paths representing the sunburst nodes are classed as 'sunburst-node'.
+* - Group objects representing the legend entries are classed as 'legend-entry'.
+* - The text at the tip of the breadcrumb trail has the id 'endlabel'.
+* - The text in the middle of the plot showing the relative percentage has the
+*   id 'percentage'.
+*/
 function plotSunburst(container, data, config) {
 
-	var defaults = {
+  // define some default settings
+  var defaults = {
     breadcrumb: {w: 75, h: 30, s: 3, t: 10},
-		color: d3.scaleOrdinal(d3.schemeCategory20c),
+    color: d3.scaleOrdinal(d3.schemeCategory20c),
+    cutoff: 0.005,  
     legend_entry: {w: 75, h: 30, s: 3, r: 3},
-		margin: {top: 20, right: 20, bottom: 20, left: 20},
-    size_accessor: function (d) {return d.size;}
-	};
-	config = $.extend({}, defaults, config);
+    margin: {top: 20, right: 20, bottom: 20, left: 20}
+  };
+
+  // augment user-defined input with default settings
+  config = $.extend({}, defaults, config);
 
   // redraw whole histogram instead of updating it
   container.select("svg").remove();
+
+  // restore back to standard layout
+  container.on("mouseleave", mouseleave);
 
   // setup svg image with padding and margins
   var width = container.node().getBoundingClientRect().width;
@@ -28,21 +86,19 @@ function plotSunburst(container, data, config) {
   .append("g")
   .attr("transform", "translate(" + innerWidth / 2 + "," + innerHeight / 2 + ")");
 
-  container.on("mouseleave", mouseleave);
-
-  // generate partition of data
+  // setup partitioning of data
   var partition = d3.partition()
   .size([2 * Math.PI, radius * radius]);
 
   // generate hierarchy
   var root = d3.hierarchy(data)
-    .sum(config.size_accessor)
-    .sort(function(a, b) { return b.value - a.value; });
+  .sum(function (d) {return d.size;})
+  .sort(function(a, b) { return b.value - a.value; });
 
-  // get nodes with visible contribution
+  // get only nodes with visible contribution
   var nodes = partition(root).descendants()
     .filter(function(d) {
-      return (d.x1 - d.x0 > 0.005); // 0.005 radians = 0.29 degrees
+      return (d.x1 - d.x0 > config.cutoff);
     });
 
   // set domain for color scale to unique names in tree
@@ -69,53 +125,56 @@ function plotSunburst(container, data, config) {
   var path = canvas.selectAll("path")
   .data(nodes)
   .enter().append("path")
-    .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
-    .attr("d", arc)
-    .style("stroke", "#fff")
-    .style("fill", function(d) {return config.color(d.data.name); })
-    .on("mouseover", mouseover);
+  .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
+  .attr("d", arc)
+  .classed("sunburst-node", true)
+  .style("stroke", "#fff")
+  .style("fill", function(d) {return config.color(d.data.name); })
+  .on("mouseover", mouseover);
 
   // get total size of the tree = value of root node from partition.
   totalSize = path.datum().value;
 
   // add legend
   var legend = canvas.append("g")
-    .attr("transform", "translate(" + (-innerWidth/2) + "," + (-innerHeight/2 + config.breadcrumb.h) + ")");
-      //.attr("height", d3.keys(colors).length * (li.h + li.s));
-
+  .attr("transform", "translate(" + (-innerWidth/2) + "," + (-innerHeight/2 + config.breadcrumb.h) + ")");
+ 
   // draw legend entries
   var entries = legend.selectAll("g")
-    .data(uniqueNames.slice(1,uniqueNames.length))
-    .enter()
-      .append("g")
-        .attr("transform", function(d, i) {return "translate(0," + i * (config.legend_entry.h + config.legend_entry.s) + ")";});
+  .data(uniqueNames.slice(1,uniqueNames.length))
+  .enter()
+  .append("g")
+  .attr("transform", function(d, i) {return "translate(0," + i * (config.legend_entry.h + config.legend_entry.s) + ")";})
+  .classed("legend-entry", true);
 
   entries.append("rect")
-    .attr("rx", config.legend_entry.r)
-    .attr("ry", config.legend_entry.r)
-    .attr("width", config.legend_entry.w)
-    .attr("height", config.legend_entry.h)
-    .style("fill", function(d) { return config.color(d); });
+  .attr("rx", config.legend_entry.r)
+  .attr("ry", config.legend_entry.r)
+  .attr("width", config.legend_entry.w)
+  .attr("height", config.legend_entry.h)
+  .style("fill", function(d) { return config.color(d); });
 
   entries.append("text")
-    .attr("x", config.legend_entry.w / 2)
-    .attr("y", config.legend_entry.h / 2)
-    .attr("dy", "0.35em")
-    .attr("text-anchor", "middle")
-    .text(function(d) { return d; });
+  .attr("x", config.legend_entry.w / 2)
+  .attr("y", config.legend_entry.h / 2)
+  .attr("dy", "0.35em")
+  .attr("text-anchor", "middle")
+  .text(function(d) { return d; });
 
   // initialize breadcrump trail
   var trail = svg.append("svg")
-    .attr("width", innerWidth)
-    .attr("height", 50)
-    .attr("id", "trail");
+  .attr("width", innerWidth)
+  .attr("height", 50)
+  .attr("id", "trail");
   
-  trail.append("text")
-    .attr("id", "endlabel");
+  trail
+  .append("text")
+  .attr("id", "endlabel");
 
-  canvas.append("text")
-    .attr("id","percentage")
-    .attr("text-anchor", "middle");
+  canvas
+  .append("text")
+  .attr("id","percentage")
+  .attr("text-anchor", "middle");
 
   // fade all but the current sequence, and show it in the breadcrumb trail
   function mouseover(d) {
@@ -186,17 +245,16 @@ function plotSunburst(container, data, config) {
     // merge enter and update selections; set position for all nodes.
     entering.merge(trail).attr("transform", function(d, i) {return "translate(" + i * (config.breadcrumb.w + config.breadcrumb.s) + ", 0)";});
 
-  // now move and update the percentage at the end.
-  d3.select("#trail").select("#endlabel")
-  .attr("x", (nodeArray.length + 0.5) * (config.breadcrumb.w + config.breadcrumb.s))
-  .attr("y", config.breadcrumb.h / 2)
-  .attr("dy", "0.35em")
-  .attr("text-anchor", "middle")
-  .text(percentageString);
+    // now move and update the percentage at the end.
+    d3.select("#trail").select("#endlabel")
+    .attr("x", (nodeArray.length + 0.5) * (config.breadcrumb.w + config.breadcrumb.s))
+    .attr("y", config.breadcrumb.h / 2)
+    .attr("dy", "0.35em")
+    .attr("text-anchor", "middle")
+    .text(percentageString);
 
-  // Make the breadcrumb trail visible, if it's hidden.
-  d3.select("#trail")
-  .style("visibility", "");
+    // Make the breadcrumb trail visible, if it's hidden.
+    d3.select("#trail").style("visibility", "");
   }  
 
   // generate a string that describes the points of a breadcrumb polygon.
