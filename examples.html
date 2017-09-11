@@ -23,6 +23,9 @@
   	fill: white;
 	}
 
+  #percentage {
+    font-weight: bold;
+  }
 	</style>
 </head>
 <body>
@@ -56,39 +59,6 @@
 
 		function draw_sunburst() {
 			var container = d3.select("#sunburst");
-			var data = {
-				name: "root",
-				children: [{
-				  name: "A",
-				  children: [{
-				  	name: "B",
-				  	children: [{
-				  		name: "C",
-				  		size: 3
-				  	},{
-				  		name: "D",
-				  		size: 1
-				  	}]
-				  },{
-				  	name: "E",
-				  	size: 6
-				  },{
-				  	name: "F",
-				  	children: [{
-				  		name: "G",
-				  		size: 2
-				  	}]
-				  }]
-				},{
-					name: "H",
-					size: 12
-				}]};
-			var config = {
-				bar_spacing: 20,
-				xtitle: "something",
-				ytitle_offset: 25
-			};
-
 			var config = {};
 			plotSunburst(container, hist_data, config);
 		}
