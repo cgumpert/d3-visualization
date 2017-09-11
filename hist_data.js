@@ -1,1 +1,0 @@
-var hist_data = {name: "root",children: [{ name: "A", size: 6, children: [{name: "B",children: [{name: "C",size: 3},{name: "D",size: 1}]},{name: "E", size: 6},{	name: "F", 	children: [{name: "G",	size: 2	}]}]},{	name: "H",size: 15}]};

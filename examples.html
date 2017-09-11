@@ -40,7 +40,6 @@
 			</div>
 		</li>
 	</ul>
-	<script src="hist_data.js"></script>
 	<script type="text/javascript">
 		draw_histogram();
 		draw_sunburst();
@@ -60,7 +59,9 @@
 		function draw_sunburst() {
 			var container = d3.select("#sunburst");
 			var config = {};
-			plotSunburst(container, hist_data, config);
+      $.getJSON("sunburst_data.json", function (hist_data) {
+  			plotSunburst(container, hist_data, config);
+      });
 		}
 
 	</script>
