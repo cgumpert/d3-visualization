@@ -2,7 +2,7 @@
 * Helper function for visualising a sunburst plot as SVG using d3js
 *
 * @param {Object}   container - D3 selection to HTML object acting as container of the svg
-* @param {Float[]}  data      - array with tree information
+* @param {Object}   data      - array with tree information
 * @param {Object}   [config]  - configuration object (optional)
 * @param {Int}      [config.breadcrumb]   - definition of polygon for breadcrumb (optional)
 * @param {Object}   [config.color]        - D3 scale object for color coding (optional)
