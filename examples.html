@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <head>
 	<script src="https://d3js.org/d3.v4.js"></script>
+  <script src="https://unpkg.com/d3-sankey@0.7"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 	<script src="plot-d3-histogram.js"></script>
 	<script src="plot-d3-sunburst.js"></script>
+	<script src="plot-d3-sankey.js"></script>
 	<style type="text/css">
 	.axis text {
 	  font: 12px sans-serif;
@@ -39,10 +41,14 @@
 			<div id="sunburst" style="width: 800px; height: 800px; border: solid 1px black; margin-left: auto; margin-right: auto;">
 			</div>
 		</li>
+    <li><h2>Sankey plots</h2>
+			<div id="sankey" style="width: 800px; height: 800px; border: solid 1px black; margin-left: auto; margin-right: auto;">
+			</div>
 	</ul>
 	<script type="text/javascript">
 		draw_histogram();
 		draw_sunburst();
+		draw_sankey();
 
 		function draw_histogram() {
 			var container = d3.select("#histogram");
@@ -64,6 +70,17 @@
       });
 		}
 
+		function draw_sankey() {
+			var container = d3.select("#sankey");
+      var color = d3.scaleOrdinal(d3.schemeCategory10); 
+			var config = {
+        node_id: function (d) {return d.node;},
+        node_color: function(d) { return color(d.name.replace(/ .*/, "")); }
+      };
+      $.getJSON("test.json", function (sankey_data) {
+  			plotSankey(container, sankey_data, config);
+      });
+		}
 	</script>
 </body>
 </html>
