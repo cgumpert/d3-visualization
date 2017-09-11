@@ -176,6 +176,12 @@ function plotSunburst(container, data, config) {
   .attr("id","percentage")
   .attr("text-anchor", "middle");
 
+  canvas
+  .append("text")
+  .attr("id","counts")
+  .attr("dy","1em")
+  .attr("text-anchor", "middle");
+
   // fade all but the current sequence, and show it in the breadcrumb trail
   function mouseover(d) {
     var percentage = (100 * d.value / totalSize).toPrecision(3);
@@ -186,6 +192,10 @@ function plotSunburst(container, data, config) {
 
     d3.select("#percentage")
     .text(percentageString)
+    .style("visibility","");
+
+    d3.select("#counts")
+    .text(d3.format(",")(d.value) + "/" + d3.format(",")(totalSize))
     .style("visibility","");
 
     var sequenceArray = d.ancestors().reverse();
@@ -217,6 +227,7 @@ function plotSunburst(container, data, config) {
     .on("end", function() {d3.select(this).on("mouseover", mouseover);});
 
     d3.select("#percentage").style("visibility","hidden");
+    d3.select("#counts").style("visibility","hidden");
   }
 
   // update the breadcrumb trail to show the current sequence and percentage.
