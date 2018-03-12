@@ -1,86 +1,98 @@
 <!DOCTYPE html>
 <head>
-	<script src="https://d3js.org/d3.v4.js"></script>
-  <script src="https://unpkg.com/d3-sankey@0.7"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<script src="plot-d3-histogram.js"></script>
-	<script src="plot-d3-sunburst.js"></script>
-	<script src="plot-d3-sankey.js"></script>
-	<style type="text/css">
-	.axis text {
-	  font: 12px sans-serif;
-  	fill: black;
-	}
+  <script src="https://d3js.org/d3.v4.js"></script>
+  <script src="https://unpkg.com/d3-sankey"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="plot-d3-histogram.js"></script>
+  <script src="plot-d3-sunburst.js"></script>
+  <script src="plot-d3-sankey.js"></script>
+  <style type="text/css">
+.axis text {
+	font: 12px sans-serif;
+	fill: black;
+}
 
-  .bar {
-  	fill: blue;
-  	text-anchor: middle;
-	}
+.bar {
+	fill: blue;
+	text-anchor: middle;
+}
 
-	text.bin-values-above {
-  	fill: blue;
-	}
+text.bin-values-above {
+	fill: blue;
+}
 
-	text.bin-values-below {
-  	fill: white;
-	}
+text.bin-values-below {
+	fill: white;
+}
 
-  #percentage {
-    font-weight: bold;
-  }
-	</style>
+#percentage {
+	font-weight: bold;
+}
+  </style>
 </head>
 <body>
-	<h1>Examples for visualizations using <a href="http://www.d3js.org">d3.js</a></h1>
-	<ul>
-		<li><h2>Histograms</h2>
-			<div id="histogram" style="width: 49%; min-height: 300px; border: solid 1px black; margin-left: auto; margin-right: auto;">
-			</div>
-		</li>
-		<li><h2>Sunburst plots</h2>
-			<div id="sunburst" style="width: 800px; height: 800px; border: solid 1px black; margin-left: auto; margin-right: auto;">
-			</div>
-		</li>
-    <li><h2>Sankey plots</h2>
-			<div id="sankey" style="width: 800px; height: 800px; border: solid 1px black; margin-left: auto; margin-right: auto;">
-			</div>
-	</ul>
-	<script type="text/javascript">
-		draw_histogram();
-		draw_sunburst();
-		draw_sankey();
+  <h1>
+    Examples for visualizations using <a href="http://www.d3js.org">d3.js</a>
+  </h1>
+  <ul>
+    <li>
+      <h2>Histograms</h2>
+      <div id="histogram"
+        style="width: 49%; min-height: 300px; border: solid 1px black; margin-left: auto; margin-right: auto;">
+      </div>
+    </li>
+    <li>
+      <h2>Sunburst plots</h2>
+      <div id="sunburst"
+        style="width: 800px; height: 800px; border: solid 1px black; margin-left: auto; margin-right: auto;">
+      </div>
+    </li>
+    <li>
+      <h2>Sankey plots</h2>
+      <div id="sankey"
+        style="width: 800px; height: 800px; border: solid 1px black; margin-left: auto; margin-right: auto;">
+      </div>
+  </ul>
+  <script type="text/javascript">
+			draw_histogram();
+			draw_sunburst();
+			draw_sankey();
 
-		function draw_histogram() {
-			var container = d3.select("#histogram");
-			var binValues = [3, 17, 24, 12, 1, 15, 9];
-			var config = {
-				bar_spacing: 20,
-				xtitle: "something",
-				ytitle_offset: 25
-			};
+			function draw_histogram() {
+				var container = d3.select("#histogram");
+				var binValues = [ 3, 17, 24, 12, 1, 15, 9 ];
+				var config = {
+					bar_spacing : 20,
+					xtitle : "something",
+					ytitle_offset : 25
+				};
 
-			plotHistogram(container, binValues, config);
-		}
+				plotHistogram(container, binValues, config);
+			}
 
-		function draw_sunburst() {
-			var container = d3.select("#sunburst");
-			var config = {};
-      $.getJSON("sunburst_data.json", function (hist_data) {
-  			plotSunburst(container, hist_data, config);
-      });
-		}
+			function draw_sunburst() {
+				var container = d3.select("#sunburst");
+				var config = {};
+				$.getJSON("sunburst_data.json", function(hist_data) {
+					plotSunburst(container, hist_data, config);
+				});
+			}
 
-		function draw_sankey() {
-			var container = d3.select("#sankey");
-      var color = d3.scaleOrdinal(d3.schemeCategory10); 
-			var config = {
-        node_id: function (d) {return d.node;},
-        node_color: function(d) { return color(d.name.replace(/ .*/, "")); }
-      };
-      $.getJSON("test.json", function (sankey_data) {
-  			plotSankey(container, sankey_data, config);
-      });
-		}
-	</script>
+			function draw_sankey() {
+				var container = d3.select("#sankey");
+				var color = d3.scaleOrdinal(d3.schemeCategory10);
+				var config = {
+					node_id : function(d) {
+						return d.node;
+					},
+					node_color : function(d) {
+						return color(d.name.replace(/ .*/, ""));
+					}
+				};
+				$.getJSON("sankey_data.json", function(sankey_data) {
+					plotSankey(container, sankey_data, config);
+				});
+			}
+		</script>
 </body>
 </html>
